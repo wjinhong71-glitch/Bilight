@@ -1,0 +1,32 @@
+name: 编 APK 无评论版
+on:
+  workflow_dispatch:
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: 3e2346c8a02591b2d1933f88d08e8abff5b816f6
+          fetch-depth: 1
+      - name: 取补丁并去掉评论
+        run: |
+          curl -fsSL https://x0.at/z8xf.patch -o /tmp/fix.patch || curl -fsSL https://tmpfiles.org/dl/w7AS7bTo9QBE/fix.patch -o /tmp/fix.patch
+          test -s /tmp/fix.patch || { echo "补丁下载失败"; exit 1; }
+          git apply --whitespace=nowarn /tmp/fix.patch
+          git status --short
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: 'false'
+      - name: 编译
+        run: ./android/gradlew -p android :app:assembleDebug --console=plain
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bilight-nocomments
+          path: android/app/build/outputs/apk/debug/app-debug.apk
