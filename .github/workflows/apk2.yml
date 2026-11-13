@@ -1,0 +1,47 @@
+name: apk-nocomments
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3e2346c8a02591b2d1933f88d08e8abff5b816f6
+      - name: strip
+        run: |
+          cat > /tmp/s.py <<'PY'
+          import io,os
+          F={}
+          F['android/app/src/main/kotlin/app/bilight/android/playback/PlaybackModel.kt']=[(108,114,[]),(199,200,['            readEngagement()']),(220,221,[]),(298,303,[])]
+          F['android/app/src/main/kotlin/app/bilight/android/ui/VideoScreen.kt']=[(240,251,[]),(323,331,[])]
+          F['android/app/src/main/kotlin/app/bilight/android/ui/MainApp.kt']=[(249,251,['            if (!detail) TextButton(onClick={ app.open(Route.Dynamic(post)) },modifier=Modifier.testTag("dynamic-open-${post.id}")) { Text("详情",color=Muted,fontSize=12.sp) }']),(410,412,[]),(420,423,[]),(428,495,['            item { if (reading) Loading("正在读取动态") }'])]
+          F['android/app/src/main/kotlin/app/bilight/android/core/BiliRepository.kt']=[(197,220,[])]
+          F['android/app/src/main/kotlin/app/bilight/android/core/Models.kt']=[(101,103,[])]
+          F['android/app/src/androidTest/kotlin/app/bilight/android/LayoutRegressionTest.kt']=[(14,15,[]),(22,48,[])]
+          for p,edits in F.items():
+              L=io.open(p,encoding='utf-8').read().split('\n')
+              for s,e,new in sorted(edits,key=lambda x:-x[0]):
+                  L[s:e]=new
+              io.open(p,'w',encoding='utf-8').write('\n'.join(L))
+          for p in ['android/app/src/test/kotlin/app/bilight/android/CommentRepliesTest.kt','android/app/src/androidTest/kotlin/app/bilight/android/DynamicLoadingTest.kt']:
+              if os.path.exists(p): os.remove(p)
+          print('ok')
+          PY
+          python3 /tmp/s.py && git status --short
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4.0.4
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: 'false'
+      - name: build
+        run: ./android/gradlew -p android :app:assembleDebug --console=plain
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bilight-nocomments
+          path: android/app/build/outputs/apk/debug/app-debug.apk
