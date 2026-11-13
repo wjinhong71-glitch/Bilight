@@ -1,0 +1,31 @@
+name: build-apk-nocomments
+on:
+  push:
+  workflow_dispatch:
+env:
+  Z: "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"
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3e2346c8a02591b2d1933f88d08e8abff5b816f6
+          fetch-depth: 1
+      - name: strip
+        run: echo "$Z" | base64 -d | gunzip > /tmp/s.py && python3 /tmp/s.py && git status --short
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4.0.4
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: 'false'
+      - name: build
+        run: ./android/gradlew -p android :app:assembleDebug --console=plain
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bilight-nocomments
+          path: android/app/build/outputs/apk/debug/app-debug.apk
